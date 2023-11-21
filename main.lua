@@ -11,13 +11,27 @@ Scale = 2
 W, H = _W/Scale, _H/Scale
 Canvas = love.graphics.newCanvas(W, H)
 
+function deepcopy(orig)
+    local orig_type = type(orig)
+    local copy
+    if orig_type == 'table' then
+        copy = {}
+        for orig_key, orig_value in next, orig, nil do
+            copy[deepcopy(orig_key)] = deepcopy(orig_value)
+        end
+        setmetatable(copy, deepcopy(getmetatable(orig)))
+    else -- number, string, boolean, etc
+        copy = orig
+    end
+    return copy
+end
 
 local speedSlider = newSlider(W/2, H - 20, 200, 50, 50, 500, 
-  function(v) Boid.speed = v end, {
+  function(v) Boid.max_speed = v end, {
   track = 'line',
   knob = 'circle'
 })
-local Sliders = { speedSlider }
+local Sliders = { }
 
 function worldToScaled(x, y)
   return x/Scale, y/Scale
@@ -32,7 +46,6 @@ for i=1,20 do
   table.insert(Flock, Boid.new())
 end
 
-
 function love.load()
   print("dimensions: " .. W .. " " .. H)
 end
@@ -44,14 +57,19 @@ function love.keypressed(key)
 end
 
 function love.update(dt)
-  require('lurker').update()
   local mx, my = getMouseToScaled()
   local m = Vector(mx, my)
 
+  local new_flock = {}
   for _, boid in ipairs(Flock) do
-    boid:update(dt)
-    -- boid:seek(m)
+    local new_boid = boid:copy()
+    --new_boid:separe(Flock)
+    --new_boid:align(Flock)
+    --new_boid:cohere(Flock)
+    new_boid:update(dt)
+    table.insert(new_flock, new_boid)
   end
+  Flock = new_flock
 
   for _, slider in ipairs(Sliders) do
     slider:update(mx, my)
