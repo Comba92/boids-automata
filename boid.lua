@@ -12,12 +12,12 @@ Boid.min_speed = 20
 Boid.view      = 25
 Boid.space     = 5
 
-Boid.avoiding  = 0.5
-Boid.matching  = 0.5
-Boid.centering = 0.5
+Boid.avoiding  = 1
+Boid.matching  = 1
+Boid.centering = 1
 
-function randomSign() 
-  local signs = {1, -1}
+function randomSign()
+  local signs = {-1, 1}
   return signs[math.random(#signs)]
 end
 
@@ -56,18 +56,6 @@ function Boid:speed()
 end
 
 function Boid:update(dt)
-  if self:speed() > 0 then
-    self.vel = self.vel:clamp(
-      Vector(Boid.min_speed, Boid.min_speed),
-      Vector(Boid.max_speed, Boid.max_speed)
-    )
-  else
-    self.vel = self.vel:clamp(
-      -1 * Vector(Boid.min_speed, Boid.min_speed),
-      -1 * Vector(Boid.max_speed, Boid.max_speed)
-    )
-  end
-
   self.pos = self.pos + self.vel * dt
   self.pos = wrap_around(self.pos)
   self.angle = self.vel.angle
