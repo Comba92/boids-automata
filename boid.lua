@@ -20,8 +20,20 @@ function Boid.new(_x, _y, angle)
   return setmetatable(boid, Boid)
 end
 
+function wrap_around(vec)
+  local new = vec.copy
+  if vec.x + Size < 0 then new.x = W + Size
+  elseif vec.x - Size > W then new.x = -Size
+  elseif vec.y + Size < 0 then new.y = H + Size
+  elseif vec.y - Size > W then new.y = -Size
+  end
+
+  return new
+end
+
 function Boid:update(dt)
   self.pos = self.pos + self.vel * Boid.speed * dt
+  self.pos = wrap_around(self.pos)
   self.angle = self.vel.angle
 end
 

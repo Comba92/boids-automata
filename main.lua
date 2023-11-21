@@ -50,7 +50,7 @@ function love.update(dt)
 
   for _, boid in ipairs(Flock) do
     boid:update(dt)
-    boid:seek(m)
+    -- boid:seek(m)
   end
 
   for _, slider in ipairs(Sliders) do
