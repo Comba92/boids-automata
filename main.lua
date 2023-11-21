@@ -12,7 +12,7 @@ W, H = _W/Scale, _H/Scale
 Canvas = love.graphics.newCanvas(W, H)
 
 local speedSlider = newSlider(W/2, H - 20, 200, 50, 50, 500, 
-  function(v) Boid.max_speed = v end, {
+  function(v) Boid.max_vel = v end, {
   track = 'line',
   knob = 'circle'
 })
@@ -42,14 +42,15 @@ function love.keypressed(key)
 end
 
 function love.update(dt)
+  require('lurker').update()
   local mx, my = getMouseToScaled()
   local m = Vector(mx, my)
 
   local new_flock = {}
   for _, boid in ipairs(Flock) do
     local new_boid = boid:copy()
-    --new_boid:separe(Flock)
-    --new_boid:align(Flock)
+    new_boid:separe(Flock)
+    new_boid:align(Flock)
     new_boid:cohere(Flock)
     new_boid:update(dt)
     table.insert(new_flock, new_boid)

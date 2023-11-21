@@ -2,13 +2,15 @@ local Boid = {}
 Boid.__index = Boid
 
 Boid.size = 5
-Boid.max_speed = 100
-Boid.min_speed = 10
+Boid.max_vel = 150
+Boid.min_vel = 50
+Boid.max_speed2 = 2 * Boid.max_vel * Boid.max_vel
+Boid.min_speed2 = 2 * Boid.min_vel * Boid.min_vel
 Boid.view      = 25
-Boid.space     = 5
+Boid.space     = 15
 
 Boid.avoiding  = 1
-Boid.matching  = 1
+Boid.matching  = 0.5
 Boid.centering = 1
 
 local Triangle = {
@@ -25,10 +27,10 @@ function Boid.new(_x, _y, _vx, _vy, angle)
   local y = _y or love.math.random(H)
 
   local vx = _vx or randomSign() * love.math.random(
-    Boid.min_speed, Boid.max_speed
+    Boid.min_vel, Boid.max_vel
   )
   local vy = _vy or randomSign() * love.math.random(
-    Boid.min_speed, Boid.max_speed
+    Boid.min_vel, Boid.max_vel
   )
 
   local boid = {
@@ -53,7 +55,13 @@ function wrap_around(vec)
 end
 
 function Boid:update(dt)
-  -- TODO: speed clamping
+  if self.vel.length2 > Boid.max_speed2 then
+    self.vel = self.vel.normalized * Boid.max_vel
+  end
+  if self.vel.length2 < Boid.min_speed2 then
+    self.vel = self.vel.normalized * Boid.min_vel
+  end
+
   self.pos = self.pos + self.vel * dt
   self.pos = wrap_around(self.pos)
   self.angle = self.vel.angle
@@ -74,7 +82,7 @@ function Boid:separe(flock)
     end
   end
 
-  self.vel = close * Boid.avoiding
+  self.vel = self.vel + close * Boid.avoiding
 end
 
 function Boid:align(flock)
@@ -91,7 +99,7 @@ function Boid:align(flock)
 
   if neighboring > 0 then
     avg_vel = avg_vel / neighboring
-    self.vel = (avg_vel - self.vel) * Boid.matching
+    self.vel = self.vel + ((avg_vel - self.vel) * Boid.matching)
   end
 end
 
@@ -109,14 +117,17 @@ function Boid:cohere(flock)
 
   if neighboring > 0 then
     avg_pos = avg_pos / neighboring
-    self.vel = (avg_pos - self.pos) * Boid.centering
+    self.vel = self.vel + ((avg_pos - self.pos) * Boid.centering)
   end
 end
 
 function Boid:draw()
-  --love.graphics.circle('line', self.pos.x, self.pos.y, Boid.view)
+  love.graphics.setColor(46/255, 46/255, 56/255)
+  love.graphics.circle('line', self.pos.x, self.pos.y, Boid.view)
+  love.graphics.circle('line', self.pos.x, self.pos.y, Boid.space)
 
   love.graphics.push()
+  love.graphics.setColor(1, 1, 1)
   love.graphics.translate(self.pos.x, self.pos.y)
   love.graphics.rotate(self.angle)
   love.graphics.polygon('line', Triangle)
