@@ -2,7 +2,7 @@ package.path = package.path .. ";./libs/?.lua"
 Vector = require('brinevector')
 
 function worldToScaled(x, y)
-  return x/ctx.scale, y/ctx.scale
+  return x/Ctx.scale, y/Ctx.scale
 end
 
 function getMouseToScaled()
@@ -10,18 +10,19 @@ function getMouseToScaled()
 end
 
 function love.load()
-  local _W, _H = love.window.getMode()
+  _W, _H = love.window.getMode()
   local scale = 2
 
-  local ctx = {
+  Ctx = {
     w = _W/scale,
     h = _H/scale,
-    scale = scale,
+    scale = 2,
+    debug = false,
+    running = false
   }
-  local canvas = love.graphics.newCanvas(ctx.w, ctx.h)
+  local canvas = love.graphics.newCanvas(Ctx.w, Ctx.h)
   canvas:setFilter('nearest', 'nearest')
-  ctx.canvas = canvas
-  _G.ctx = ctx
+  Ctx.canvas = canvas
 
   Sliders = require('sliders')
   Boid = require('boid')
@@ -32,7 +33,7 @@ function love.load()
 
   love.graphics.setDefaultFilter('nearest', 'nearest')
   love.graphics.setLineStyle('rough')
-  print("Dimensions: " .. ctx.w .. " " .. ctx.h)
+  print("Dimensions: " .. Ctx.w .. " " .. Ctx.h)
 end
 
 
@@ -40,14 +41,23 @@ function love.keypressed(key)
   if key == 'q' or key == 'escape' then
     love.event.quit()
   end
+
+  if key == 'space' then
+    Ctx.running = not Ctx.running
+  end
 end
 
 function love.update(dt)
   local mx, my = getMouseToScaled()
+  for _, slider in ipairs(Sliders) do
+    slider:update(mx, my)
+  end
 
   if love.mouse.isDown(2) then
     table.insert(Flock, Boid.new(mx, my))
   end
+
+  if not Ctx.running then return end
 
   local new_flock = {}
   for _, boid in ipairs(Flock) do
@@ -59,26 +69,31 @@ function love.update(dt)
     table.insert(new_flock, new_boid)
   end
   Flock = new_flock
-
-  for _, slider in ipairs(Sliders) do
-    slider:update(mx, my)
-  end
 end
 
 function love.draw()
-  love.graphics.setCanvas(ctx.canvas)
+  love.graphics.print('Boids: ' .. #Flock, 10, 10)
+  love.graphics.print('FPS: ' .. love.timer.getFPS(), 10, 22)
+
+  love.graphics.setCanvas(Ctx.canvas)
     love.graphics.clear()
 
     for _, boid in ipairs(Flock) do
       boid:draw()
     end
 
+    love.graphics.setColor(0, 0, 0)
+    love.graphics.rectangle('fill', 0, Ctx.h - 20, Ctx.w, 20)
+    love.graphics.setColor(1, 1, 1)
+    love.graphics.line(0, Ctx.h - 20, Ctx.w, Ctx.h - 20)
     for _, slider in ipairs(Sliders) do
       slider:draw()
     end
 
-    local mx, my = love.mouse.getPosition()
-    love.graphics.circle('line', mx/ctx.scale, my/ctx.scale, 10)
+    -- local mx, my = getMouseToScaled()
+    -- love.graphics.circle('line', mx, my, 5)
+
   love.graphics.setCanvas()
-  love.graphics.draw(ctx.canvas, 0, 0, 0, ctx.scale, ctx.scale)
+
+  love.graphics.draw(Ctx.canvas, 0, 0, 0, Ctx.scale, Ctx.scale)
 end

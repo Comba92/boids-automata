@@ -1,13 +1,13 @@
 local Boid = {}
 Boid.__index = Boid
 
-Boid.size    = 5
+Boid.size    = 4
 Boid.max_vel = 150
 Boid.min_vel = 100
 Boid.max_speed2 = 2 * Boid.max_vel * Boid.max_vel
 Boid.min_speed2 = 2 * Boid.min_vel * Boid.min_vel
 Boid.viewing_range   = 20
-Boid.protected_range = 15
+Boid.protected_range = 10
 
 Boid.avoiding  = 1.5
 Boid.matching  = 0.5
@@ -23,7 +23,7 @@ local function randomSign()
 end
 
 local function wrapAround(vec)
-  local w, h = ctx.w, ctx.h
+  local w, h = Ctx.w, Ctx.h
   local new = vec.copy
   local radius = Boid.size * 1.25
   if vec.x + radius < 0 then
@@ -41,7 +41,7 @@ local function wrapAround(vec)
 end
 
 function Boid.new(_x, _y, _vx, _vy, angle)
-  local w, h = ctx.w, ctx.h
+  local w, h = Ctx.w, Ctx.h
   local x = _x or love.math.random(w)
   local y = _y or love.math.random(h)
 
@@ -128,9 +128,13 @@ function Boid:cohere(flock)
 end
 
 function Boid:draw()
-  love.graphics.setColor(46/255, 46/255, 56/255)
-  love.graphics.circle('line', self.pos.x, self.pos.y, Boid.viewing_range)
-  --love.graphics.circle('line', self.pos.x, self.pos.y, Boid.space)
+  if Ctx.debug then
+    love.graphics.setColor(134 / 255, 121 / 255, 121 / 255, 0.6)
+    love.graphics.circle('line', self.pos.x, self.pos.y, Boid.viewing_range)
+
+    love.graphics.setColor(61 / 255, 41 / 255, 41 / 255, 0.7)
+    love.graphics.circle('line', self.pos.x, self.pos.y, Boid.protected_range)
+  end
 
   love.graphics.push()
   love.graphics.setColor(1, 1, 1)
