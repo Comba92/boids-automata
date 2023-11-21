@@ -11,21 +11,6 @@ Scale = 2
 W, H = _W/Scale, _H/Scale
 Canvas = love.graphics.newCanvas(W, H)
 
-function deepcopy(orig)
-    local orig_type = type(orig)
-    local copy
-    if orig_type == 'table' then
-        copy = {}
-        for orig_key, orig_value in next, orig, nil do
-            copy[deepcopy(orig_key)] = deepcopy(orig_value)
-        end
-        setmetatable(copy, deepcopy(getmetatable(orig)))
-    else -- number, string, boolean, etc
-        copy = orig
-    end
-    return copy
-end
-
 local speedSlider = newSlider(W/2, H - 20, 200, 50, 50, 500, 
   function(v) Boid.max_speed = v end, {
   track = 'line',
@@ -65,7 +50,7 @@ function love.update(dt)
     local new_boid = boid:copy()
     --new_boid:separe(Flock)
     --new_boid:align(Flock)
-    --new_boid:cohere(Flock)
+    new_boid:cohere(Flock)
     new_boid:update(dt)
     table.insert(new_flock, new_boid)
   end

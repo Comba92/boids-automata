@@ -1,14 +1,9 @@
 local Boid = {}
 Boid.__index = Boid
 
-local Size = 5
-
-local Triangle = {
-  -1*Size,1*Size, -1*Size,-1*Size, 1*Size,0*Size
-}
-
+Boid.size = 5
 Boid.max_speed = 100
-Boid.min_speed = 20
+Boid.min_speed = 10
 Boid.view      = 25
 Boid.space     = 5
 
@@ -16,8 +11,12 @@ Boid.avoiding  = 1
 Boid.matching  = 1
 Boid.centering = 1
 
+local Triangle = {
+  -1 * Boid.size, 1 * Boid.size, -1 * Boid.size, -1 * Boid.size, 1 * Boid.size, 0 * Boid.size
+}
+
 function randomSign()
-  local signs = {-1, 1}
+  local signs = {-1, 1, -1, 1}
   return signs[math.random(#signs)]
 end
 
@@ -42,36 +41,35 @@ end
 
 function wrap_around(vec)
   local new = vec.copy
-  if vec.x + Size < 0 then new.x = W + Size
-  elseif vec.x - Size > W then new.x = -Size
-  elseif vec.y + Size < 0 then new.y = H + Size
-  elseif vec.y - Size > W then new.y = -Size
+  local radius = Boid.size*1.25
+  if vec.x + radius < 0 then new.x = W + radius
+  elseif vec.x - radius > W then new.x = -radius
+  end
+  if vec.y + radius < 0 then new.y = H + radius
+  elseif vec.y - radius > H then new.y = -radius
   end
 
   return new
 end
 
-function Boid:speed()
-  return self.vel.length
-end
-
 function Boid:update(dt)
+  -- TODO: speed clamping
   self.pos = self.pos + self.vel * dt
   self.pos = wrap_around(self.pos)
   self.angle = self.vel.angle
 end
 
 function Boid:seek(target)
-  local direction = (target - self.pos).normalized
-  self.vel = direction
+  local direction = (target - self.pos).angle
+  self.vel = self.vel:angled(direction)
 end
 
 function Boid:separe(flock)
   local close = Vector()
 
   for _, other in ipairs(flock) do
-    local dist = (other.pos - self.pos).length
-    if dist ~= 0 and dist < Boid.space then
+    local dist = (other.pos - self.pos).length2
+    if dist ~= 0 and dist < Boid.space * Boid.space then
       close = close + (self.pos - other.pos)
     end
   end
@@ -84,8 +82,8 @@ function Boid:align(flock)
   local avg_vel = Vector()
 
   for _, other in ipairs(flock) do
-    local dist = (other.pos - self.pos).length
-    if other ~= self and dist < Boid.view then
+    local dist = (other.pos - self.pos).length2
+    if other ~= self and dist < Boid.view * Boid.view then
       avg_vel = avg_vel + other.vel
       neighboring = neighboring + 1
     end
@@ -102,8 +100,8 @@ function Boid:cohere(flock)
   local avg_pos = Vector()
 
   for _, other in ipairs(flock) do
-    local dist = (other.pos - self.pos).length
-    if dist ~= 0 and dist < Boid.view then
+    local dist = (other.pos - self.pos).length2
+    if dist ~= 0 and dist < Boid.view * Boid.view then
       avg_pos = avg_pos + other.pos
       neighboring = neighboring + 1
     end
@@ -116,7 +114,7 @@ function Boid:cohere(flock)
 end
 
 function Boid:draw()
-  love.graphics.circle('line', self.pos.x, self.pos.y, Boid.view)
+  --love.graphics.circle('line', self.pos.x, self.pos.y, Boid.view)
 
   love.graphics.push()
   love.graphics.translate(self.pos.x, self.pos.y)
