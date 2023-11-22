@@ -1,6 +1,10 @@
 package.path = package.path .. ";./libs/?.lua"
 Vector = require('brinevector')
 
+function scaledToWorld(x, y)
+  return x*Ctx.scale, y*Ctx.scale
+end
+
 function worldToScaled(x, y)
   return x/Ctx.scale, y/Ctx.scale
 end
@@ -49,9 +53,7 @@ end
 
 function love.update(dt)
   local mx, my = getMouseToScaled()
-  for _, slider in ipairs(Sliders) do
-    slider:update(mx, my)
-  end
+  Sliders:update(mx, my)
 
   if love.mouse.isDown(2) then
     table.insert(Flock, Boid.new(mx, my))
@@ -86,9 +88,7 @@ function love.draw()
     love.graphics.rectangle('fill', 0, Ctx.h - 20, Ctx.w, 20)
     love.graphics.setColor(1, 1, 1)
     love.graphics.line(0, Ctx.h - 20, Ctx.w, Ctx.h - 20)
-    for _, slider in ipairs(Sliders) do
-      slider:draw()
-    end
+    Sliders:draw()
 
     -- local mx, my = getMouseToScaled()
     -- love.graphics.circle('line', mx, my, 5)
@@ -96,4 +96,5 @@ function love.draw()
   love.graphics.setCanvas()
 
   love.graphics.draw(Ctx.canvas, 0, 0, 0, Ctx.scale, Ctx.scale)
+  Sliders:drawNames()
 end

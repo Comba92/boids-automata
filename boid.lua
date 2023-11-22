@@ -1,7 +1,7 @@
 local Boid = {}
 Boid.__index = Boid
 
-Boid.size    = 4
+Boid.size    = 3
 Boid.max_vel = 150
 Boid.min_vel = 100
 Boid.max_speed2 = 2 * Boid.max_vel * Boid.max_vel
