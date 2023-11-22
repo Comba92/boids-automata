@@ -1,5 +1,6 @@
 local Boid = {}
 Boid.__index = Boid
+local Trail = require('trail')
 
 Boid.size    = 3
 Boid.max_vel = 150
@@ -17,10 +18,24 @@ local Triangle = {
   -1 * Boid.size, 1 * Boid.size, -1 * Boid.size, -1 * Boid.size, 1 * Boid.size, 0 * Boid.size
 }
 
-local function randomSign()
-  local signs = {-1, 1, -1, 1}
-  return signs[math.random(#signs)]
+function Boid.new(_x, _y, _vx, _vy, angle)
+  local x = _x or love.math.random(Ctx.w)
+  local y = _y or love.math.random(Ctx.h)
+
+  local vx = _vx or love.math.random(-Boid.max_vel, Boid.max_vel)
+  local vy = _vy or love.math.random(-Boid.max_vel, Boid.max_vel)
+
+  local boid = {
+    pos = Vector(x, y),
+    vel = Vector(vx, vy),
+    acc = Vector(),
+    angle = angle or 0,
+    trail = Trail.new(),
+    emit = true
+  }
+  return setmetatable(boid, Boid)
 end
+
 
 local function wrapAround(vec)
   local w, h = Ctx.w, Ctx.h
@@ -40,33 +55,23 @@ local function wrapAround(vec)
   return new
 end
 
-function Boid.new(_x, _y, _vx, _vy, angle)
-  local w, h = Ctx.w, Ctx.h
-  local x = _x or love.math.random(w)
-  local y = _y or love.math.random(h)
+function Boid:update(dt, flock)
+  if Ctx.trails and self.emit then
+    local back = Vector(-1*Boid.size, 0):angled(self.angle)
+    self.trail:update(self.pos - back)
+  end
+  self.emit = not self.emit
 
-  local vx = _vx or randomSign() * love.math.random(
-    Boid.min_vel, Boid.max_vel
-  )
-  local vy = _vy or randomSign() * love.math.random(
-    Boid.min_vel, Boid.max_vel
-  )
-
-  local boid = {
-    pos = Vector(x, y),
-    vel = Vector(vx, vy),
-    angle = angle or 0
-  }
-  return setmetatable(boid, Boid)
-end
-
-function Boid:update(dt)
   if self.vel.length2 > Boid.max_speed2 then
-    self.vel = self.vel.normalized * Boid.max_vel
+    self.vel = self.vel:trim(Boid.max_vel)
   end
   if self.vel.length2 < Boid.min_speed2 then
     self.vel = self.vel.normalized * Boid.min_vel
   end
+
+  self:separe(flock)
+  self:align(flock)
+  self:cohere(flock)
 
   self.pos = self.pos + self.vel * dt
   self.pos = wrapAround(self.pos)
@@ -128,13 +133,8 @@ function Boid:cohere(flock)
 end
 
 function Boid:draw()
-  if Ctx.debug then
-    love.graphics.setColor(134 / 255, 121 / 255, 121 / 255, 0.6)
-    love.graphics.circle('line', self.pos.x, self.pos.y, Boid.viewing_range)
-
-    love.graphics.setColor(61 / 255, 41 / 255, 41 / 255, 0.7)
-    love.graphics.circle('line', self.pos.x, self.pos.y, Boid.protected_range)
-  end
+  if Ctx.trails then self.trail:draw() end
+  if Ctx.areas then self:drawAreas() end
 
   love.graphics.push()
   love.graphics.setColor(1, 1, 1)
@@ -145,9 +145,16 @@ function Boid:draw()
   love.graphics.pop()
 end
 
+function Boid:drawAreas()
+  love.graphics.setColor(134 / 255, 121 / 255, 121 / 255, 0.7)
+  love.graphics.circle('line', self.pos.x, self.pos.y, Boid.viewing_range)
+
+  love.graphics.setColor(61 / 255, 41 / 255, 41 / 255)
+  love.graphics.circle('line', self.pos.x, self.pos.y, Boid.protected_range)
+end
+
 function Boid:copy()
   return Boid.new(self.pos.x, self.pos.y, self.vel.x, self.vel.y, self.angle)
 end
-
 
 return Boid

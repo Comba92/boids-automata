@@ -21,7 +21,8 @@ function love.load()
     w = _W/scale,
     h = _H/scale,
     scale = 2,
-    debug = false,
+    areas = false,
+    trails = false,
     running = false
   }
   local canvas = love.graphics.newCanvas(Ctx.w, Ctx.h)
@@ -31,7 +32,7 @@ function love.load()
   Sliders = require('sliders')
   Boid = require('boid')
   Flock = {}
-  for i = 1, 100 do
+  for i = 1,50 do
     table.insert(Flock, Boid.new())
   end
 
@@ -49,6 +50,14 @@ function love.keypressed(key)
   if key == 'space' then
     Ctx.running = not Ctx.running
   end
+
+  if key == 'a' then
+    Ctx.areas = not Ctx.areas
+  end
+
+  if key == 't' then
+    Ctx.trails = not Ctx.trails
+  end
 end
 
 function love.update(dt)
@@ -61,16 +70,9 @@ function love.update(dt)
 
   if not Ctx.running then return end
 
-  local new_flock = {}
   for _, boid in ipairs(Flock) do
-    local new_boid = boid:copy()
-    new_boid:separe(Flock)
-    new_boid:align(Flock)
-    new_boid:cohere(Flock)
-    new_boid:update(dt)
-    table.insert(new_flock, new_boid)
+    boid:update(dt, Flock)
   end
-  Flock = new_flock
 end
 
 function love.draw()
