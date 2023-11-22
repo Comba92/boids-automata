@@ -1,8 +1,8 @@
 local Trail = {}
 Trail.__index = Trail
 
-Trail.size = 2
-Trail.length = 4
+Trail.size = 1
+Trail.length = 3
 
 function Trail.new()
   local trail = {
@@ -21,7 +21,7 @@ end
 function Trail:draw()
   love.graphics.setColor(1, 1, 1, 0.7)
   for _, particle in ipairs(self.history) do
-    love.graphics.points(particle.x, particle.y)
+    love.graphics.circle('fill', particle.x, particle.y, Trail.size)
   end
   love.graphics.setColor(1, 1, 1)
 end

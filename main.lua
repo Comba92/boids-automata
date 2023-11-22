@@ -1,5 +1,6 @@
-package.path = package.path .. ";./libs/?.lua"
+package.path = package.path .. ";./libs/?.lua;D:/code/love2d/libs/?.lua"
 Vector = require('brinevector')
+Spring = require('spring')
 
 function scaledToWorld(x, y)
   return x*Ctx.scale, y*Ctx.scale
@@ -20,7 +21,7 @@ function love.load()
   Ctx = {
     w = _W/scale,
     h = _H/scale,
-    scale = 2,
+    scale = scale,
     areas = false,
     trails = true,
     running = false,
@@ -71,6 +72,7 @@ function love.keypressed(key)
 end
 
 function love.update(dt)
+  require('lurker').update()
   local mx, my = getMouseToScaled()
   Sliders:update(mx, my)
 

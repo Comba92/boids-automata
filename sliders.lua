@@ -42,24 +42,22 @@ local maxspeedSlider = newSlider(
   Ctx.w - 160, height, 50,
   Boid.max_vel, 50, 300, function(v)
     Boid.max_vel = v
-    Boid.max_speed2 = 2 * Boid.max_vel * Boid.max_vel
   end, config
 )
 maxspeedSlider.name = "MaxSpeed"
 
-local minspeedSlider = newSlider(
+local steeringSlider = newSlider(
   Ctx.w - 220, height, 50,
-  Boid.min_vel, 20, 250, function(v)
-    Boid.min_vel = v
-    Boid.min_speed2 = 2 * Boid.min_vel * Boid.min_vel
+  Boid.max_steering, 50, 400, function(v)
+    Boid.max_steering = v
   end, config
 )
-minspeedSlider.name = "MinSpeed"
+steeringSlider.name = "Steering"
 
 local Sliders = {
   avoidiginSlider, aligninSlider, cohesionSlider,
   viewrangeSlider, protectedrangeSlider,
-  maxspeedSlider, minspeedSlider
+  maxspeedSlider, steeringSlider
 }
 Sliders.__index = Sliders
 

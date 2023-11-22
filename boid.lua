@@ -5,8 +5,6 @@ local Trail = require('trail')
 Boid.size    = 4
 Boid.max_vel = 120
 Boid.min_vel = 90
-Boid.max_speed2 = 2 * Boid.max_vel * Boid.max_vel
-Boid.min_speed2 = 2 * Boid.min_vel * Boid.min_vel
 Boid.viewing_range   = 22
 Boid.protected_range = 10
 
@@ -14,7 +12,9 @@ Boid.avoiding  = 1
 Boid.alignin  = 0.001
 Boid.cohesion = 0.3
 Boid.delay    = 0.05
-Boid.turning = 500
+-- necessary for fluid steering, the higher the better
+Boid.mass = 30
+Boid.max_steering = 200
 
 local Triangle = {
   -1 * Boid.size, 1 * Boid.size, -1 * Boid.size, -1 * Boid.size, 1 * Boid.size, 0 * Boid.size
@@ -96,20 +96,17 @@ function Boid:update(dt, flock)
   end
 
   self.angle = self.vel.angle
-
-  if self.vel.length2 > Boid.max_speed2 then
-    self.vel = self.vel:trim(Boid.max_vel)
-  end
-  if self.vel.length2 < Boid.min_speed2 then
+  self.vel = self.vel:trim(Boid.max_vel)
+  if self.vel.length < Boid.min_vel then
     self.vel = self.vel.normalized * Boid.min_vel
   end
 end
 
 -- https://code.tutsplus.com/understanding-steering-behaviors-seek--gamedev-849t
 function Boid:seek(target)
-  local direction = (target - self.pos).normalized * Boid.max_vel
-  local steering = (direction - self.vel):trim(Boid.max_vel) / 10
-  self.vel = self.vel + steering
+  local desired = (target - self.pos).normalized * Boid.max_vel
+  local steering = (desired - self.vel):trim(Boid.max_steering) / Boid.mass
+  self.vel = (self.vel + steering):trim(Boid.max_vel)
 end
 
 function Boid:separe(flock)
@@ -157,7 +154,8 @@ function Boid:cohere(flock)
 
   if neighboring > 0 then
     avg_pos = avg_pos / neighboring
-    self.vel = self.vel + ((avg_pos - self.pos) * Boid.cohesion)
+    self:seek(avg_pos)
+    -- self.vel = self.vel + ((avg_pos - self.pos) * Boid.cohesion)
   end
 end
 

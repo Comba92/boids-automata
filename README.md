@@ -22,5 +22,6 @@ on the project's root.
 ## References
 - Boids simulation: https://vanhunteradams.com/Pico/Animal_Movement/Boids-algorithm.html
 - Boids simulation in p5: https://p5js.org/examples/simulate-flocking.html
+- Steering behaviour: https://code.tutsplus.com/understanding-steering-behaviors-seek--gamedev-849t
 - Love2D sliders: https://love2d.org/forums/viewtopic.php?t=80711
 - Love2D Wiki: https://love2d.org/wiki/Main_Page
