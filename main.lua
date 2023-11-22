@@ -22,7 +22,7 @@ function love.load()
     h = _H/scale,
     scale = 2,
     areas = false,
-    trails = false,
+    trails = true,
     running = false
   }
   local canvas = love.graphics.newCanvas(Ctx.w, Ctx.h)

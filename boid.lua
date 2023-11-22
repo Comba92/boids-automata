@@ -11,12 +11,14 @@ Boid.viewing_range   = 20
 Boid.protected_range = 10
 
 Boid.avoiding  = 1.5
-Boid.matching  = 0.5
+Boid.matching  = 0.2
 Boid.centering = 0.5
 
 local Triangle = {
   -1 * Boid.size, 1 * Boid.size, -1 * Boid.size, -1 * Boid.size, 1 * Boid.size, 0 * Boid.size
 }
+
+Boid.delay = 0.05
 
 function Boid.new(_x, _y, _vx, _vy, angle)
   local x = _x or love.math.random(Ctx.w)
@@ -31,7 +33,7 @@ function Boid.new(_x, _y, _vx, _vy, angle)
     acc = Vector(),
     angle = angle or 0,
     trail = Trail.new(),
-    emit = true
+    timer = 0
   }
   return setmetatable(boid, Boid)
 end
@@ -56,11 +58,22 @@ local function wrapAround(vec)
 end
 
 function Boid:update(dt, flock)
-  if Ctx.trails and self.emit then
+  if Ctx.trails and self.timer > Boid.delay then
+    self.timer = 0
     local back = Vector(-1*Boid.size, 0):angled(self.angle)
     self.trail:update(self.pos - back)
   end
-  self.emit = not self.emit
+  self.timer = self.timer + dt
+
+  self:separe(flock)
+  self:align(flock)
+  self:cohere(flock)
+
+  self.vel = self.vel + self.acc
+  self.pos = self.pos + self.vel * dt
+  self.pos = wrapAround(self.pos)
+  self.angle = self.vel.angle
+  self.acc = self.acc * 0
 
   if self.vel.length2 > Boid.max_speed2 then
     self.vel = self.vel:trim(Boid.max_vel)
@@ -68,14 +81,6 @@ function Boid:update(dt, flock)
   if self.vel.length2 < Boid.min_speed2 then
     self.vel = self.vel.normalized * Boid.min_vel
   end
-
-  self:separe(flock)
-  self:align(flock)
-  self:cohere(flock)
-
-  self.pos = self.pos + self.vel * dt
-  self.pos = wrapAround(self.pos)
-  self.angle = self.vel.angle
 end
 
 function Boid:seek(target)

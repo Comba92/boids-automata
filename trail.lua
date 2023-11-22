@@ -1,8 +1,8 @@
 local Trail = {}
 Trail.__index = Trail
 
-Trail.size = 1
-Trail.length = 8
+Trail.size = 2
+Trail.length = 5
 
 function Trail.new()
   local trail = {

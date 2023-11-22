@@ -16,7 +16,7 @@ avoidiginSlider.name = "Avoidance"
 
 local aligninSlider = newSlider(
   90, height, 50,
-  0.5, 0.001, 1.5, function(v) Boid.matching = v end, config
+  0.2, 0.001, 1, function(v) Boid.matching = v end, config
 )
 aligninSlider.name = "Aligning"
 
