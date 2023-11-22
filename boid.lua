@@ -14,7 +14,7 @@ Boid.avoiding  = 1
 Boid.alignin  = 0.001
 Boid.cohesion = 0.3
 Boid.delay    = 0.05
-Boid.turning = 2
+Boid.turning = 500
 
 local Triangle = {
   -1 * Boid.size, 1 * Boid.size, -1 * Boid.size, -1 * Boid.size, 1 * Boid.size, 0 * Boid.size
@@ -58,21 +58,15 @@ end
 
 function Boid:turnOnBorders()
   local w, h = Ctx.w, Ctx.h
-  local new = self.vel
   local radius = Boid.size * 1.25
 
-  if self.pos.x + radius < 0 then
-    new.x = new.x + Boid.turning
-  elseif self.pos.x - radius > w then
-    new.x = new.x - Boid.turning
+  local border = 50
+  if self.pos.x + radius < 0 + border or
+    self.pos.x - radius > w - border or
+    self.pos.y + radius < 0 + border or
+    self.pos.y - radius > h - border then
+      self:seek(Vector(w/2, h/2))
   end
-  if self.pos.x + radius < 0 then
-    new.y = new.y + Boid.turning
-  elseif self.pos.x - radius > h then
-    new.y = new.y - Boid.turning
-  end
-
-  self.vel = new
 end
 
 function Boid:update(dt, flock)
@@ -92,8 +86,15 @@ function Boid:update(dt, flock)
   self:cohere(flock)
 
   self.pos = self.pos + self.vel * dt
+
   if Ctx.turning then self:turnOnBorders()
   else self:wrapAroundBorders() end
+
+  if Ctx.follow then
+    local mouse = Vector(getMouseToScaled())
+    self:seek(mouse)
+  end
+
   self.angle = self.vel.angle
 
   if self.vel.length2 > Boid.max_speed2 then
@@ -104,9 +105,11 @@ function Boid:update(dt, flock)
   end
 end
 
+-- https://code.tutsplus.com/understanding-steering-behaviors-seek--gamedev-849t
 function Boid:seek(target)
-  local direction = (target - self.pos).angle
-  self.vel = self.vel:angled(direction)
+  local direction = (target - self.pos).normalized * Boid.max_vel
+  local steering = (direction - self.vel):trim(Boid.max_vel) / 10
+  self.vel = self.vel + steering
 end
 
 function Boid:separe(flock)

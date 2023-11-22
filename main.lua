@@ -25,6 +25,7 @@ function love.load()
     trails = true,
     running = false,
     turning = false,
+    follow = false,
   }
   local canvas = love.graphics.newCanvas(Ctx.w, Ctx.h)
   canvas:setFilter('nearest', 'nearest')
@@ -62,6 +63,10 @@ function love.keypressed(key)
 
   if key == 'b' then
     Ctx.turning = not Ctx.turning
+  end
+
+  if key == 'm' then 
+    Ctx.follow = not Ctx.follow
   end
 end
 

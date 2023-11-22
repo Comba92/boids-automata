@@ -6,6 +6,8 @@ https://en.wikipedia.org/wiki/Boids
 - <kbd>Right Click</kbd> Spawn Boids
 - <kbd>A</kbd> Show/Hide viewing areas
 - <kbd>T</kbd> Show/Hide trails
+- <kbd>B</kbd> Enable/Disable turning on borders
+- <kbd>M</kbd> Enable/Disable mouse follwing
 
 ![preview](preview.gif)
 
