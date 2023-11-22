@@ -2,23 +2,23 @@ local Boid = {}
 Boid.__index = Boid
 local Trail = require('trail')
 
-Boid.size    = 3
-Boid.max_vel = 150
-Boid.min_vel = 100
+Boid.size    = 4
+Boid.max_vel = 120
+Boid.min_vel = 90
 Boid.max_speed2 = 2 * Boid.max_vel * Boid.max_vel
 Boid.min_speed2 = 2 * Boid.min_vel * Boid.min_vel
-Boid.viewing_range   = 20
+Boid.viewing_range   = 22
 Boid.protected_range = 10
 
-Boid.avoiding  = 1.5
-Boid.matching  = 0.2
-Boid.centering = 0.5
+Boid.avoiding  = 1
+Boid.alignin  = 0.001
+Boid.cohesion = 0.3
+Boid.delay    = 0.05
+Boid.turning = 2
 
 local Triangle = {
   -1 * Boid.size, 1 * Boid.size, -1 * Boid.size, -1 * Boid.size, 1 * Boid.size, 0 * Boid.size
 }
-
-Boid.delay = 0.05
 
 function Boid.new(_x, _y, _vx, _vy, angle)
   local x = _x or love.math.random(Ctx.w)
@@ -30,7 +30,6 @@ function Boid.new(_x, _y, _vx, _vy, angle)
   local boid = {
     pos = Vector(x, y),
     vel = Vector(vx, vy),
-    acc = Vector(),
     angle = angle or 0,
     trail = Trail.new(),
     timer = 0
@@ -39,25 +38,48 @@ function Boid.new(_x, _y, _vx, _vy, angle)
 end
 
 
-local function wrapAround(vec)
+function Boid:wrapAroundBorders()
   local w, h = Ctx.w, Ctx.h
-  local new = vec.copy
+  local new = self.pos
   local radius = Boid.size * 1.25
-  if vec.x + radius < 0 then
+  if self.pos.x + radius < 0 then
     new.x = w + radius
-  elseif vec.x - radius > w then
+  elseif self.pos.x - radius > w then
     new.x = -radius
   end
-  if vec.y + radius < 0 then
+  if self.pos.y + radius < 0 then
     new.y = h + radius
-  elseif vec.y - radius > h then
+  elseif self.pos.y - radius > h then
     new.y = -radius
   end
 
-  return new
+  self.pos = new
+end
+
+function Boid:turnOnBorders()
+  local w, h = Ctx.w, Ctx.h
+  local new = self.vel
+  local radius = Boid.size * 1.25
+
+  if self.pos.x + radius < 0 then
+    new.x = new.x + Boid.turning
+  elseif self.pos.x - radius > w then
+    new.x = new.x - Boid.turning
+  end
+  if self.pos.x + radius < 0 then
+    new.y = new.y + Boid.turning
+  elseif self.pos.x - radius > h then
+    new.y = new.y - Boid.turning
+  end
+
+  self.vel = new
 end
 
 function Boid:update(dt, flock)
+  if not Ctx.trails and self.trail ~= nil then
+    self.trail:clear()
+  end
+
   if Ctx.trails and self.timer > Boid.delay then
     self.timer = 0
     local back = Vector(-1*Boid.size, 0):angled(self.angle)
@@ -69,11 +91,10 @@ function Boid:update(dt, flock)
   self:align(flock)
   self:cohere(flock)
 
-  self.vel = self.vel + self.acc
   self.pos = self.pos + self.vel * dt
-  self.pos = wrapAround(self.pos)
+  if Ctx.turning then self:turnOnBorders()
+  else self:wrapAroundBorders() end
   self.angle = self.vel.angle
-  self.acc = self.acc * 0
 
   if self.vel.length2 > Boid.max_speed2 then
     self.vel = self.vel:trim(Boid.max_vel)
@@ -115,7 +136,7 @@ function Boid:align(flock)
 
   if neighboring > 0 then
     avg_vel = avg_vel / neighboring
-    self.vel = self.vel + ((avg_vel - self.vel) * Boid.matching)
+    self.vel = self.vel + ((avg_vel - self.vel) * Boid.alignin)
   end
 end
 
@@ -133,7 +154,7 @@ function Boid:cohere(flock)
 
   if neighboring > 0 then
     avg_pos = avg_pos / neighboring
-    self.vel = self.vel + ((avg_pos - self.pos) * Boid.centering)
+    self.vel = self.vel + ((avg_pos - self.pos) * Boid.cohesion)
   end
 end
 

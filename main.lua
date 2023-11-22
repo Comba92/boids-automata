@@ -23,19 +23,20 @@ function love.load()
     scale = 2,
     areas = false,
     trails = true,
-    running = false
+    running = false,
+    turning = false,
   }
   local canvas = love.graphics.newCanvas(Ctx.w, Ctx.h)
   canvas:setFilter('nearest', 'nearest')
   Ctx.canvas = canvas
 
-  Sliders = require('sliders')
   Boid = require('boid')
   Flock = {}
   for i = 1,50 do
     table.insert(Flock, Boid.new())
   end
 
+  Sliders = require('sliders')
   love.graphics.setDefaultFilter('nearest', 'nearest')
   love.graphics.setLineStyle('rough')
   print("Dimensions: " .. Ctx.w .. " " .. Ctx.h)
@@ -57,6 +58,10 @@ function love.keypressed(key)
 
   if key == 't' then
     Ctx.trails = not Ctx.trails
+  end
+
+  if key == 'b' then
+    Ctx.turning = not Ctx.turning
   end
 end
 
