@@ -16,7 +16,7 @@ end
 
 function love.load()
   _W, _H = love.window.getMode()
-  local scale = 1
+  local scale = 2
 
   Ctx = {
     window_w = _W,
@@ -49,7 +49,7 @@ function love.load()
   Screen = QuadTree.newAABB(Ctx.w / 2, Ctx.h / 2, Ctx.w + Boid.size*4, Ctx.h + Boid.size*4)
 
   Flock = {}
-  for i = 1, 1000 do
+  for i = 1, 200 do
     table.insert(Flock, Boid.new())
   end
 

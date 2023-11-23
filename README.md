@@ -10,7 +10,7 @@ https://en.wikipedia.org/wiki/Boids
 - <kbd>M</kbd> Enable/Disable mouse follwing
 - <kbd>O</kbd> Enable/Disable quadtree optimization for collission checking
 
-![preview](preview.gif)
+![preview](preview_new.gif)
 
 ## Build
 The project requires [Love2D](https://love2d.org/).
