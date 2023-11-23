@@ -16,7 +16,7 @@ end
 
 function love.load()
   _W, _H = love.window.getMode()
-  local scale = 2
+  local scale = 1
 
   Ctx = {
     w = _W/scale,
@@ -28,6 +28,7 @@ function love.load()
     turning = false,
     follow = false,
   }
+
   local canvas = love.graphics.newCanvas(Ctx.w, Ctx.h)
   canvas:setFilter('nearest', 'nearest')
   Ctx.canvas = canvas

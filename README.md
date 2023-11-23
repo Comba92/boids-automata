@@ -1,4 +1,4 @@
-# Boids - Flocking simulation in Lua Love2D
+# 🛆 Boids - 🐦 Flocking simulation in Lua Love2D
 Love2D implementation of the Boids simulation.
 https://en.wikipedia.org/wiki/Boids
 
