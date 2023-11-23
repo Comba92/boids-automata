@@ -102,6 +102,12 @@ function Boid:update(dt, flock)
   end
 end
 
+function Boid:update_quadtree(dt, qt)
+  local aabb = QuadTree.newAABB(self.pos.x, self.pos.y, Boid.viewing_range, Boid.viewing_range)
+  local neighboring = qt:query(aabb)
+  self:update(dt, neighboring)
+end
+
 -- https://code.tutsplus.com/understanding-steering-behaviors-seek--gamedev-849t
 function Boid:seek(target)
   local desired = (target - self.pos).normalized * Boid.max_vel

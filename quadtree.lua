@@ -32,7 +32,7 @@ function AABB:intersects(other)
 end
 
 
-QuadTree.capacity = 4
+QuadTree.capacity = 10
 function QuadTree.new(aabb)
   local qt = {
     nw = nil,
