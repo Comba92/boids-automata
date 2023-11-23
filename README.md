@@ -8,6 +8,7 @@ https://en.wikipedia.org/wiki/Boids
 - <kbd>T</kbd> Show/Hide trails
 - <kbd>B</kbd> Enable/Disable turning on borders
 - <kbd>M</kbd> Enable/Disable mouse follwing
+- <kbd>O</kbd> Enable/Disable quadtree optimization for collission checking
 
 ![preview](preview.gif)
 

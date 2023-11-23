@@ -16,30 +16,40 @@ end
 
 function love.load()
   _W, _H = love.window.getMode()
-  local scale = 2
+  local scale = 1
 
   Ctx = {
+    window_w = _W,
+    window_h = _H,
     w = _W/scale,
     h = _H/scale,
     scale = scale,
+    sliders_h = 40,
+
     areas = false,
     trails = true,
     running = false,
     turning = false,
     follow = false,
     quadtree = false,
+
+    quadtree_boids = 0
   }
+  love.window.setMode(_W, _H + Ctx.sliders_h)
 
   local canvas = love.graphics.newCanvas(Ctx.w, Ctx.h)
   canvas:setFilter('nearest', 'nearest')
+  local slidersCanvas = love.graphics.newCanvas(Ctx.window_w, Ctx.sliders_h)
+  slidersCanvas:setFilter('nearest', 'nearest')
   Ctx.canvas = canvas
+  Ctx.sliders_canvas = slidersCanvas
 
   Boid = require('boid')
   -- Boids outside the quadtree box aren't saved! 
-  Screen = QuadTree.newAABB(Ctx.w / 2, Ctx.h / 2, Ctx.w + Boid.size*4, Ctx.h + Boid.size * 4)
+  Screen = QuadTree.newAABB(Ctx.w / 2, Ctx.h / 2, Ctx.w + Boid.size*4, Ctx.h + Boid.size*4)
 
   Flock = {}
-  for i = 1, 500 do
+  for i = 1, 1000 do
     table.insert(Flock, Boid.new())
   end
 
@@ -68,24 +78,22 @@ function love.keypressed(key)
 
   elseif key == 'm' then
     Ctx.follow = not Ctx.follow
-  
+
   elseif key == 'o' then
-    Ctx.quadtree = not Ctx.quadtree  
+    Ctx.quadtree = not Ctx.quadtree
   end
 end
 
-QtSize = 0
 
 function love.update(dt)
-  require('lurker').update()
+  Sliders:update()
+
   local mx, my = getMouseToScaled()
-  Sliders:update(mx, my)
-
-  if not Ctx.running then return end
-
   if love.mouse.isDown(2) then
     table.insert(Flock, Boid.new(mx, my))
   end
+
+  if not Ctx.running then return end
 
   if not Ctx.quadtree then
     for _, boid in ipairs(Flock) do
@@ -103,14 +111,14 @@ function love.update(dt)
     boid:update_quadtree(dt, qt)
   end
 
-  QtSize = qt:length()
+  Ctx.quadtree_boids = qt:length()
 end
 
 
 function love.draw()
   love.graphics.print('Boids: ' .. #Flock, 10, 10)
   if Ctx.quadtree then 
-    love.graphics.print("Quadtree ON: " .. QtSize, 10, 40)
+    love.graphics.print("Quadtree ON: " .. Ctx.quadtree_boids, 10, 40)
   end
   love.graphics.print('FPS: ' .. love.timer.getFPS(), 10, 22)
 
@@ -121,17 +129,19 @@ function love.draw()
       boid:draw()
     end
 
-    love.graphics.setColor(0, 0, 0)
-    love.graphics.rectangle('fill', 0, Ctx.h - 20, Ctx.w, 20)
-    love.graphics.setColor(1, 1, 1)
-    love.graphics.line(0, Ctx.h - 20, Ctx.w, Ctx.h - 20)
-    Sliders:draw()
-
     -- local mx, my = getMouseToScaled()
     -- love.graphics.circle('line', mx, my, 5)
 
-  love.graphics.setCanvas()
+  love.graphics.setCanvas(Ctx.sliders_canvas)
+    love.graphics.setColor(46/255, 46/255, 46/255)
+    love.graphics.rectangle('fill', 0, 0, Ctx.window_w, Ctx.sliders_h)
+    love.graphics.setColor(1, 1, 1, 0.9)
+    love.graphics.line(0, 1, Ctx.window_w, 1)
+    Sliders:draw()
+    love.graphics.setColor(1, 1, 1)
 
+  love.graphics.setCanvas()
   love.graphics.draw(Ctx.canvas, 0, 0, 0, Ctx.scale, Ctx.scale)
+  love.graphics.draw(Ctx.sliders_canvas, 0, Ctx.window_h)
   Sliders:drawNames()
 end

@@ -32,7 +32,7 @@ function AABB:intersects(other)
 end
 
 
-QuadTree.capacity = 10
+QuadTree.capacity = 200
 function QuadTree.new(aabb)
   local qt = {
     nw = nil,
@@ -86,17 +86,10 @@ function QuadTree:insert(boid)
     or self.sw:insert(boid) or self.se:insert(boid)
 end
 
-local function concat(t1, t2)
-  local new = {}
-
-  for _, e in ipairs(t1) do
-    table.insert(new, e)
+local function concat(dst, src)
+  for _, e in ipairs(src) do
+    table.insert(dst, e)
   end
-  for _, e in ipairs(t2) do
-    table.insert(new, e)
-  end
-
-  return new
 end
 
 function QuadTree:query(aabb)
@@ -110,10 +103,10 @@ function QuadTree:query(aabb)
 
   if self.nw == nil then return points end
 
-  points = concat(points, self.nw:query(aabb))
-  points = concat(points, self.ne:query(aabb))
-  points = concat(points, self.sw:query(aabb))
-  points = concat(points, self.se:query(aabb))
+  concat(points, self.nw:query(aabb))
+  concat(points, self.ne:query(aabb))
+  concat(points, self.sw:query(aabb))
+  concat(points, self.se:query(aabb))
 
   return points
 end
@@ -146,8 +139,5 @@ function QuadTree:length()
   return count
 end
 
-function QuadTree:getTrees()
-
-end
 
 return {newQuadTree = QuadTree.new, newAABB = AABB.new}
