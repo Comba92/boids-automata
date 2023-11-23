@@ -4,11 +4,12 @@ QuadTree.__index = QuadTree
 local AABB = {}
 AABB.__index = AABB
 
-function AABB.new(x, y, dimension)
+function AABB.new(x, y, w, h)
   local aabb = {
     x = x,
     y = y,
-    halfSize = dimension/2,
+    hw = w/2,
+    hh = h/2
   }
 
   return setmetatable(aabb, AABB)
@@ -16,24 +17,23 @@ end
 
 function AABB:contains(p)
   return
-    p.x > self.x - self.halfSize and
-    p.x < self.x + self.halfSize and
-    p.y > self.y - self.halfSize and
-    p.y < self.y + self.halfSize
+    p.x > self.x - self.hw and
+    p.x < self.x + self.hw and
+    p.y > self.y - self.hh and
+    p.y < self.y + self.hh
 end
 
 function AABB:intersects(other)
   return
-    other.x + other.halfSize > self.x - self.halfSize and
-    other.x - other.halfSize < self.x + self.halfSize and
-    other.y + other.halfSize > self.y - self.halfSize and
-    other.y - other.halfSize < self.y + self.halfSize
+    other.x + other.hw > self.x - self.hw and
+    other.x - other.hw < self.x + self.hw and
+    other.y + other.hh > self.y - self.hh and
+    other.y - other.hh < self.y + self.hh
 end
 
 
 QuadTree.capacity = 4
-function QuadTree.new(x, y, size)
-  local aabb = AABB.new(x, y, size)
+function QuadTree.new(aabb)
   local qt = {
     nw = nil,
     ne = nil,
@@ -46,25 +46,35 @@ function QuadTree.new(x, y, size)
   return setmetatable(qt, QuadTree)
 end
 
-function QuadTree:subdivide()
-  self.nw =
-    QuadTree.new(self.box.x - self.box.halfSize/2, self.box.y - self.box.halfSize/2, self.box.halfSize)
-
-  self.ne =
-    QuadTree.new(self.box.x + self.box.halfSize / 2, self.box.y - self.box.halfSize / 2, self.box.halfSize)
-
-  self.sw =
-    QuadTree.new(self.box.x - self.box.halfSize / 2, self.box.y + self.box.halfSize / 2, self.box.halfSize)
-
-  self.se =
-      QuadTree.new(self.box.x + self.box.halfSize / 2, self.box.y + self.box.halfSize / 2, self.box.halfSize)
+function QuadTree.newFromRect(x, y, w, h)
+  local aabb = AABB.new(x, y, w, h)
+  return QuadTree.new(aabb)
 end
 
-function QuadTree:insert(p)
-  if not self.box:contains(p) then return false end
+function QuadTree:subdivide()
+  local nw =
+    AABB.new(self.box.x - self.box.hw/2, self.box.y - self.box.hh/2, self.box.hw, self.box.hh)
+
+  local ne =
+    AABB.new(self.box.x + self.box.hw / 2, self.box.y - self.box.hh / 2, self.box.hw, self.box.hh)
+
+  local sw =
+    AABB.new(self.box.x - self.box.hw / 2, self.box.y + self.box.hh / 2, self.box.hw, self.box.hh)
+
+  local se =
+      AABB.new(self.box.x + self.box.hw / 2, self.box.y + self.box.hh / 2, self.box.hw, self.box.hh)
+
+  self.nw = QuadTree.new(nw)
+  self.ne = QuadTree.new(ne)
+  self.sw = QuadTree.new(sw)
+  self.se = QuadTree.new(se)
+end
+
+function QuadTree:insert(boid)
+  if not self.box:contains(boid.pos.copy) then return false end
 
   if self.nw == nil and #self.points < QuadTree.capacity then
-    table.insert(self.points, p)
+    table.insert(self.points, boid)
     return true
   end
 
@@ -72,8 +82,8 @@ function QuadTree:insert(p)
     self:subdivide()
   end
 
-  return self.nw:insert(p) or self.ne:insert(p)
-    or self.sw:insert(p) or self.se:insert(p)
+  return self.nw:insert(boid) or self.ne:insert(boid)
+    or self.sw:insert(boid) or self.se:insert(boid)
 end
 
 local function concat(t1, t2)
@@ -95,7 +105,7 @@ function QuadTree:query(aabb)
   if not self.box:intersects(aabb) then return points end
 
   for _,p in ipairs(self.points) do
-    if aabb:contains(p) then table.insert(points, p) end
+    if aabb:contains(p.pos) then table.insert(points, p) end
   end
 
   if self.nw == nil then return points end
@@ -109,7 +119,7 @@ function QuadTree:query(aabb)
 end
 
 function AABB:debug()
-  love.graphics.rectangle('line', self.x - self.halfSize, self.y - self.halfSize, self.halfSize * 2, self.halfSize * 2)
+  love.graphics.rectangle('line', self.x - self.hw, self.y - self.hh, self.hw * 2, self.hh * 2)
 end
 
 function QuadTree:debug()
@@ -134,6 +144,10 @@ function QuadTree:length()
   count = count + self.se:length()
 
   return count
+end
+
+function QuadTree:getTrees()
+
 end
 
 return {newQuadTree = QuadTree.new, newAABB = AABB.new}
