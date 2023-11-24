@@ -32,7 +32,7 @@ function AABB:intersects(other)
 end
 
 
-QuadTree.capacity = 200
+QuadTree.capacity = 10
 function QuadTree.new(aabb)
   local qt = {
     nw = nil,
@@ -93,10 +93,9 @@ local function concat(dst, src)
 end
 
 function QuadTree:query(aabb)
+  if not self.box:intersects(aabb) then return {} end
+
   local points = {}
-
-  if not self.box:intersects(aabb) then return points end
-
   for _,p in ipairs(self.points) do
     if aabb:contains(p.pos) then table.insert(points, p) end
   end

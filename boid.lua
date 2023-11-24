@@ -87,8 +87,8 @@ function Boid:update(dt, flock)
 
   self.pos = self.pos + self.vel * dt
 
-  if Ctx.turning then self:turnOnBorders()
-  else self:wrapAroundBorders() end
+  if Ctx.wrapping then self:wrapAroundBorders()
+  else self:turnOnBorders() end
 
   if Ctx.follow then
     local mouse = Vector(getMouseToScaled())
