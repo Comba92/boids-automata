@@ -23,7 +23,7 @@ aligninSlider.name = "Aligning"
 
 local cohesionSlider = newSlider(
   100 + gap*2, height, size,
-  Boid.cohesion, 0.001, 1, function(v) Boid.cohesion = v end, config
+  Boid.mass, 50, 15, function(v) Boid.mass = v end, config
 )
 cohesionSlider.name = "Cohesion"
 

@@ -10,10 +10,12 @@ Boid.protected_range = 10
 
 Boid.avoiding  = 1
 Boid.alignin  = 0.001
-Boid.cohesion = 0.3
-Boid.delay    = 0.05
--- necessary for fluid steering, the higher the better
+-- unused
+-- Boid.cohesion = 0.3
 Boid.mass = 30
+Boid.delay = 0.05
+
+-- necessary for fluid steering, the higher the better
 Boid.max_steering = 200
 
 local Triangle = {

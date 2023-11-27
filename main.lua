@@ -60,7 +60,6 @@ function love.load()
   print("Dimensions: ", Ctx.w, Ctx.h)
 end
 
-
 function love.keypressed(key)
   if key == 'q' or key == 'escape' then
     love.event.quit()
